@@ -9,6 +9,17 @@ def variant(mysch, key_field, nopop_flag="NP"):
         fields = [ f['ref'] for f in comp.fields if f['name'] == kf]
         if len(fields)>0 and fields[0] == npop:
             comp.labels["name"] = comp.labels["name"] + "_NOPOP"
+    def change_title(line):
+        if line.startswith("Title"):
+            line_fields = line.split('"')
+            if len(line_fields)>1:
+                previous_title = line_fields[1]
+            else:
+                previous_title = ""
+            title = previous_title + " - " + key_field + " variant"
+            line = 'Title "{}"\n'.format(title)
+        return line
+    mysch.description.raw_data = [change_title(line) for line in mysch.description.raw_data] 
             
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="change parts in schematic to reflect not variant BOM. You should have run create_nopop on the cache lib of the project before.")
