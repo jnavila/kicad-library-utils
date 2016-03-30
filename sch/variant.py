@@ -8,7 +8,11 @@ def variant(mysch, key_field, nopop_flag="NP"):
     for comp in mysch.components:
         fields = [ f['ref'] for f in comp.fields if f['name'] == kf]
         if len(fields)>0 and fields[0] == npop:
-            comp.labels["name"] = comp.labels["name"] + "_NOPOP"
+            if not comp.labels["name"].endswith("_NOPOP"):
+                comp.labels["name"] = comp.labels["name"] + "_NOPOP"
+        else:
+            if comp.labels["name"].endswith("_NOPOP"):
+                comp.labels["name"] = comp.labels["name"][:-6]
     def change_title(line):
         if line.startswith("Title"):
             line_fields = line.split('"')
@@ -16,7 +20,10 @@ def variant(mysch, key_field, nopop_flag="NP"):
                 previous_title = line_fields[1]
             else:
                 previous_title = ""
-            title = previous_title + " - " + key_field + " variant"
+            if not previous_title.endswith("variant"):
+                title = previous_title + " - " + key_field + " variant"
+            else:
+                title = previous_title
             line = 'Title "{}"\n'.format(title)
         return line
     mysch.description.raw_data = [change_title(line) for line in mysch.description.raw_data] 
