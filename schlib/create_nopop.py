@@ -78,13 +78,15 @@ def compute_boundaries(npcomp):
     return rect
     
 def action(mylib, nopop=cross_nopop):
-    # Not idempotent!
-    for component in mylib.components:
-        if not component.name.endswith("_NOPOP") and component.definition["reference"]!="#PWR" :
-            npcomp = copy.deepcopy(component)
-            rect = compute_boundaries(npcomp)
-            nopop(npcomp, rect)
-            mylib.components.append(npcomp)
+    components_names = set([c.name for c in mylib.components if c.definition["reference"] != "#PWR"])
+    pop_set, nopop_set = set(), set()
+    for c in components_names:
+        nopop_set.add(c[:-6]) if c.endswith("_NOPOP") else pop_set.add(c)
+    for c_name in pop_set - nopop_set:
+        npcomp = copy.deepcopy(mylib.getComponentByName(c_name))
+        rect = compute_boundaries(npcomp)
+        nopop(npcomp, rect)
+        mylib.components.append(npcomp)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
